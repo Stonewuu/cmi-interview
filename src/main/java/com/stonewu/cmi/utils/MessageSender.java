@@ -33,23 +33,34 @@ public class MessageSender {
             long time = System.currentTimeMillis();
             Integer qos = sendMessageDto.getQos();
             while (true) {
-                boolean enter = slidingWindowCounter.moveWindow("key", sendMessageDto, 1L);
+                boolean enter = slidingWindowCounter.moveWindow( sendMessageDto, 1L);
                 if (!enter) {
                     //窗口时间内请求已满
                     if (qos == 1 && System.currentTimeMillis() - time < 4000) {
                         // 高优先级消息可延迟发送
                         Thread.sleep(100);
                         continue;
-                    }
-                    if (qos == 2 && System.currentTimeMillis() - time < 1000) {
+                    }else if (qos == 2 && System.currentTimeMillis() - time < 2000) {
                         Thread.sleep(200);
                         continue;
                     }
+                    System.err.println("发送失败：窗口拦截，QOS：" + qos);
                 } else {
+                    if(qos == 3 && System.currentTimeMillis() - time < 4000){
+                        redisTemplate.opsForZSet().remove("window", sendMessageDto);
+                        // 4秒内有资源留给高优先级处理
+                        Thread.sleep(1000);
+                        continue;
+                    }else if(qos == 2 && System.currentTimeMillis() - time < 2000){
+                        // 2秒内有资源留给高优先级处理
+                        redisTemplate.opsForZSet().remove("window", sendMessageDto);
+                        Thread.sleep(1000);
+                        continue;
+                    }
                     Object val = redisTemplate.opsForValue().get("phone:" + sendMessageDto.getAcceptorTel());
                     if (val == null) {
                         val = redisTemplate.opsForValue().getAndSet("phone:" + sendMessageDto.getAcceptorTel(), 1);
-                        redisTemplate.expire("phone:" + sendMessageDto.getAcceptorTel(), 1100, TimeUnit.MILLISECONDS);
+                        redisTemplate.expire("phone:" + sendMessageDto.getAcceptorTel(), 1, TimeUnit.SECONDS);
                         if (val == null) {
                             String json = objectMapper.writeValueAsString(sendMessageDto);
                             String result = HttpClient.doPost("http://127.0.0.1:8081/v2/emp/templateSms/sendSms", json);
@@ -57,10 +68,13 @@ public class MessageSender {
                             if (Integer.valueOf(code) == 0) {
                                 flag = true;
                             } else {
-                                System.err.println("发送失败：" + result);
+                                System.err.println("发送失败：" + result+"，QOS：" + qos);
                             }
+                        } else {
+                            System.err.println("发送失败：号码限制内部拦截，QOS：" + qos);
                         }
                     } else {
+                        System.err.println("发送失败：号码限制外部拦截，QOS：" + qos);
                     }
                 }
                 return flag;
