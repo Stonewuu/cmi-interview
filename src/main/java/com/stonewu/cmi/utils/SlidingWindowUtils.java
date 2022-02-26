@@ -12,7 +12,7 @@ public class SlidingWindowUtils {
         this.redisTemplate = redisTemplate;
     }
 
-    public synchronized boolean moveWindow(SendMessageDto val, Long second) {
+    public synchronized Long moveWindow(SendMessageDto val, Long second) {
         long now = System.currentTimeMillis();
         // 清除超出窗口的数据
         if(val.getQos() == 3){
@@ -20,10 +20,10 @@ public class SlidingWindowUtils {
         }
         Long count = redisTemplate.opsForZSet().count("window", now - second * 1000, now);
         if (count >= 10) {
-            return false;
+            return count;
         }
         redisTemplate.opsForZSet().add("window", val, now);
-        return true;
+        return count;
     }
 
 }
