@@ -46,13 +46,13 @@ public class MessageSender {
                     }
                     System.err.println("发送失败：窗口拦截，QOS：" + qos);
                 } else {
-                    if(count >= 8 && qos == 3 && System.currentTimeMillis() - time < 4000){
+                    if(count >= 8 && qos == 3 && System.currentTimeMillis() - time < 1000){
                         redisTemplate.opsForZSet().remove("window", sendMessageDto);
                         // 4秒内有资源留给高优先级处理
-                        Thread.sleep(1000);
+                        Thread.sleep(500);
                         continue;
-                    }else if (count >= 8 && qos == 2 && System.currentTimeMillis() - time < 2000) {
-                        Thread.sleep(1000);
+                    }else if (count >= 8 && qos == 2 && System.currentTimeMillis() - time < 1000) {
+                        Thread.sleep(500);
                         continue;
                     }
                     Object val = redisTemplate.opsForValue().get("phone:" + sendMessageDto.getAcceptorTel());
