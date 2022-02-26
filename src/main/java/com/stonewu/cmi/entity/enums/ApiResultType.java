@@ -8,15 +8,15 @@ public enum ApiResultType implements Serializable {
      */
     SUCCESS(200, "success"),
     /**
-     * 未获取到授权
+     * 请求参数错误
      */
     PARAM_ERROR(400, "请求参数错误"),
     /**
-     * 未获取到授权
+     * 禁止未经授权访问
      */
     NO_AUTH_ERROR(403, "禁止未经授权访问"),
     /**
-     * 未知错误
+     * 内部服务器错误
      */
     SERVER_ERROR(500, "内部服务器错误");
 
