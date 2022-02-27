@@ -5,12 +5,13 @@ import com.stonewu.cmi.entity.dto.MessageDto;
 import com.stonewu.cmi.entity.dto.SendMessageDto;
 import com.stonewu.cmi.entity.enums.ApiResultType;
 import com.stonewu.cmi.entity.result.CommonResult;
-import com.stonewu.cmi.entity.result.LoginResult;
-import com.stonewu.cmi.utils.HttpClient;
 import com.stonewu.cmi.utils.MessageSender;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,15 +29,6 @@ public class MessageController {
     public MessageController(RedisTemplate redisTemplate, MessageSender messageSender) {
         this.redisTemplate = redisTemplate;
         this.messageSender = messageSender;
-    }
-
-    @GetMapping
-    public CommonResult test() {
-        String s = HttpClient.doPost("http://127.0.0.1:8088/auth/user/login", "{\n" +
-                "    \"userName\": \"admin\",\n" +
-                "    \"password\": \"Adminpassword123\"\n" +
-                "}");
-        return new LoginResult(ApiResultType.SUCCESS, s);
     }
 
     @PostMapping("/directmessage")
