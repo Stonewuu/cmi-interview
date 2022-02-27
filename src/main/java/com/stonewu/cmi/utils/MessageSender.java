@@ -61,7 +61,7 @@ public class MessageSender {
                         redisTemplate.expire("phone:" + sendMessageDto.getAcceptorTel(), 1, TimeUnit.SECONDS);
                         if (val == null) {
                             String json = objectMapper.writeValueAsString(sendMessageDto);
-                            String result = HttpClient.doPost("http://127.0.0.1:8081/v2/emp/templateSms/sendSms", json);
+                            String result = HttpClient.doPost("http://mock-sms-server:8080/v2/emp/templateSms/sendSms", json);
                             String code = JsonPath.read(result, "$.res_code");
                             if (Integer.valueOf(code) == 0) {
                                 flag = true;
